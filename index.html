@@ -1,246 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FDIC 2026 Classroom Session Selector</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f6f9;
-      color: #333;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #1e3a8a;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .session {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 12px;
-      transition: all 0.2s;
-    }
-    .session:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      border-color: #1e40af;
-    }
-    .session input[type="checkbox"] {
-      transform: scale(1.4);
-      margin-right: 12px;
-      accent-color: #1e40af;
-    }
-    .title {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .room {
-      color: #166534;
-      font-weight: 600;
-    }
-    .speakers {
-      color: #334155;
-      font-style: italic;
-      margin-top: 8px;
-    }
-    .summary {
-      font-size: 0.95em;
-      line-height: 1.5;
-      color: #555;
-      margin-top: 10px;
-    }
-    .stats {
-      position: sticky;
-      top: 10px;
-      background: #1e40af;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
-      font-weight: bold;
-    }
-    button {
-      background: #1e40af;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      margin: 5px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #1e3a8a;
-    }
-    .selected-list {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f0f9ff;
-      border-radius: 8px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FDIC Class Planner</title>
+<style>
+body { font-family: Arial; margin:0; background:#111; color:#fff; }
+header { padding:10px; text-align:center; background:#222; }
+.tabs { display:flex; }
+.tab { flex:1; padding:10px; text-align:center; cursor:pointer; background:#333; }
+.tab.active { background:#555; }
+.content { display:none; padding:10px; }
+.content.active { display:block; }
+
+.card { background:#1c1c1c; margin-bottom:10px; padding:10px; border-radius:8px; }
+.time { font-size:12px; opacity:.7; }
+
+button {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  background:#007bff;
+  color:white;
+  font-size:16px;
+}
+
+.choice-btn {
+  margin-top:5px;
+  background:#444;
+}
+.choice-btn.selected {
+  background:#28a745;
+}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>FDIC 2026 — Classroom Session Planner</h1>
-    
-    <div class="stats">
-      Selected: <span id="count">0</span> / 25 sessions
-    </div>
 
-    <div id="sessions"></div>
+<header>
+<h2>FDIC Class Planner</h2>
+</header>
 
-    <div style="text-align:center; margin-top:30px;">
-      <button onclick="clearAll()">Clear All</button>
-      <button onclick="showSelected()">Show My Schedule</button>
-    </div>
+<div class="tabs">
+<div class="tab active" onclick="showTab(0)">Select</div>
+<div class="tab" onclick="showTab(1)">Time Slots</div>
+<div class="tab" onclick="showTab(2)">Final</div>
+</div>
 
-    <div id="mySchedule" class="selected-list" style="display:none;">
-      <h2>My Selected Classes</h2>
-      <ul id="selectedList"></ul>
-    </div>
-  </div>
+<!-- TAB 1 -->
+<div class="content active" id="tab0"></div>
 
-  <script>
-    const sessions = [
-      {
-        id: 1,
-        title: "10 Hose Stretches Every Firefighter Should Know",
-        room: "Room 109-110",
-        speaker: "Ray McCormack, Lieutenant ret. - FDNY",
-        summary: "Showcases 10 essential hose stretches for modern built environments."
-      },
-      {
-        id: 2,
-        title: "Aortic Dissection: When Minutes and Medications Matter",
-        room: "Room 106",
-        speaker: "Chrisinta Philpott, Flight Nurse & Critical Care Educator - Impact EMS",
-        summary: "Critical recognition and management of aortic dissection."
-      },
-      {
-        id: 3,
-        title: "Art of Go/No-Go ... or Go Slow",
-        room: "Room 132-133",
-        speaker: "Mike Gagliano, Captain - Seattle Fire Dept. (ret.)",
-        summary: "Decision-making for interior vs defensive fire attack."
-      },
-      {
-        id: 4,
-        title: "Commanding and Controlling the Volunteer Fireground",
-        room: "Room 236",
-        speaker: "Richard Ray, Battalion Chief - City of Durham (NC)",
-        summary: "Effective ICS use for volunteer departments."
-      },
-      {
-        id: 5,
-        title: "Coordinating Ventilation: Supporting Extinguishment and Survivability",
-        room: "N/A",
-        speaker: "Nicholas Papa, Captain - New Britain Fire Department",
-        summary: "Tactics and precautions for coordinated ventilation."
-      },
-      {
-        id: 6,
-        title: "Electric Hybrid Vehicle Response",
-        room: "Room 101-102",
-        speaker: "Jason Defosse, Firefighter - Quinte West Fire Department",
-        summary: "Lithium-ion battery and high-voltage vehicle response."
-      },
-      {
-        id: 7,
-        title: "Fully Involved Leadership",
-        room: "Room 127-128",
-        speaker: "Mark vonAppen, Captain (Retired) - Palo Alto, CA",
-        summary: "Leadership through communication and expectations."
-      },
-      {
-        id: 8,
-        title: "Large Truck Extrication",
-        room: "Room 123-124",
-        speaker: "Steve White, Battalion Chief - Fishers Fire Department",
-        summary: "Hazards and techniques for large truck extrications."
-      },
-      {
-        id: 9,
-        title: "Lead, Survive, and Thrive: Developing Fire Service Leaders",
-        room: "Wabash 3",
-        speaker: "Douglas Mitchell, Jr & Dan Shaw",
-        summary: "High-impact leadership development."
-      },
-      {
-        id: 10,
-        title: "Little Lungs, Big Problems: Mastering Pediatric Breathing Emergencies",
-        room: "N/A",
-        speaker: "Meg Marino, Medical Director - EMSC of Louisiana",
-        summary: "Pediatric respiratory emergencies in the field."
-      },
-      {
-        id: 11,
-        title: "Making It, Breaking It, or Losing It",
-        room: "Room 240-242",
-        speaker: "Gordon Graham & Billy Goldfeder",
-        summary: "Challenges facing the modern fire service."
-      }
-      // Add more sessions here if needed
-    ];
+<!-- TAB 2 -->
+<div class="content" id="tab1"></div>
 
-    const container = document.getElementById('sessions');
-    
-    sessions.forEach(session => {
-      const div = document.createElement('div');
-      div.className = 'session';
-      div.innerHTML = `
-        <label>
-          <input type="checkbox" onchange="updateCount()">
-          <span class="title">${session.id}. ${session.title}</span><br>
-          <span class="room">${session.room}</span><br>
-          <span class="speakers">${session.speaker}</span>
-          <div class="summary">${session.summary}</div>
-        </label>
-      `;
-      container.appendChild(div);
+<!-- TAB 3 -->
+<div class="content" id="tab2"></div>
+
+<script>
+// SAMPLE DATA (you can expand this)
+const classes = [
+{ title:"360 Leadership", time:"8:00 AM" },
+{ title:"Active Shooter Response", time:"8:00 AM" },
+{ title:"Advanced Auto Extrication", time:"8:00 AM" },
+{ title:"Buddy to Boss Leadership", time:"8:00 AM" },
+
+{ title:"The Grab Analysis", time:"1:00 PM" },
+{ title:"Whole Blood in EMS", time:"1:00 PM" },
+{ title:"Residential Playbook", time:"1:00 PM" },
+
+{ title:"Andragogy of Simulation", time:"3:00 PM" },
+{ title:"Talking Rigs", time:"3:00 PM" }
+];
+
+let selected = new Set();
+let grouped = {};
+let finalChoices = {};
+
+// ---------- TAB SWITCH ----------
+function showTab(i){
+  document.querySelectorAll(".tab").forEach((t,idx)=>{
+    t.classList.toggle("active", idx===i);
+  });
+  document.querySelectorAll(".content").forEach((c,idx)=>{
+    c.classList.toggle("active", idx===i);
+  });
+
+  if(i===1) buildGrouped();
+  if(i===2) buildFinal();
+}
+
+// ---------- TAB 1 ----------
+function buildList(){
+  const container = document.getElementById("tab0");
+  container.innerHTML = "";
+
+  classes.forEach((c,i)=>{
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML = `
+      <div><b>${c.title}</b></div>
+      <div class="time">${c.time}</div>
+      <input type="checkbox" onchange="toggleSelect(${i})">
+    `;
+    container.appendChild(div);
+  });
+
+  container.innerHTML += `<button onclick="showTab(1)">Next →</button>`;
+}
+
+function toggleSelect(i){
+  if(selected.has(i)) selected.delete(i);
+  else selected.add(i);
+}
+
+// ---------- TAB 2 ----------
+function buildGrouped(){
+  grouped = {};
+  selected.forEach(i=>{
+    const c = classes[i];
+    if(!grouped[c.time]) grouped[c.time] = [];
+    grouped[c.time].push({ ...c, index:i });
+  });
+
+  const container = document.getElementById("tab1");
+  container.innerHTML = "";
+
+  Object.keys(grouped).forEach(time=>{
+    const div = document.createElement("div");
+    div.className="card";
+
+    let html = `<b>${time}</b>`;
+    grouped[time].forEach(c=>{
+      html += `
+      <div>
+        <button class="choice-btn" onclick="choose('${time}', ${c.index}, this)">
+          ${c.title}
+        </button>
+      </div>`;
     });
 
-    function updateCount() {
-      const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
-      document.getElementById('count').textContent = checked;
-    }
+    div.innerHTML = html;
+    container.appendChild(div);
+  });
 
-    function clearAll() {
-      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-      updateCount();
-      document.getElementById('mySchedule').style.display = 'none';
-    }
+  container.innerHTML += `<button onclick="showTab(2)">Next →</button>`;
+}
 
-    function showSelected() {
-      const checkedBoxes = document.querySelectorAll('input[type="checkbox"]:checked');
-      const list = document.getElementById('selectedList');
-      list.innerHTML = '';
-      
-      if (checkedBoxes.length === 0) {
-        list.innerHTML = '<li>No classes selected yet.</li>';
-      } else {
-        checkedBoxes.forEach(cb => {
-          const title = cb.parentElement.querySelector('.title').textContent;
-          const li = document.createElement('li');
-          li.textContent = title;
-          list.appendChild(li);
-        });
-      }
-      
-      document.getElementById('mySchedule').style.display = 'block';
-    }
-  </script>
+function choose(time, index, el){
+  finalChoices[time] = index;
+
+  // reset buttons in that group
+  const parent = el.parentElement.parentElement;
+  parent.querySelectorAll(".choice-btn").forEach(b=>b.classList.remove("selected"));
+
+  el.classList.add("selected");
+}
+
+// ---------- TAB 3 ----------
+function buildFinal(){
+  const container = document.getElementById("tab2");
+  container.innerHTML = "";
+
+  Object.keys(finalChoices).forEach(time=>{
+    const c = classes[finalChoices[time]];
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML = `
+      <b>${c.title}</b>
+      <div class="time">${time}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// INIT
+buildList();
+</script>
+
 </body>
 </html>
